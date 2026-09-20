@@ -8,9 +8,10 @@ from . import selectors as sel
 
 os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "0")
 
-MAX_CHALLENGE_RETRIES = 4   
-MAX_RATE_LIMIT_RETRIES = 2      
-MAX_OUTER_RETRIES = 3
+# Keep the synchronous API request bounded on Render's free instance.
+MAX_CHALLENGE_RETRIES = 2
+MAX_RATE_LIMIT_RETRIES = 1
+MAX_OUTER_RETRIES = 2
 NAV_TIMEOUT_MS = 15000
 SELECTOR_TIMEOUT_MS = 8000
 
