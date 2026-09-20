@@ -48,21 +48,26 @@ def _record_scrape(product, result):
 
 
 def _scrape_and_record(product):
+	attempt_events = []
+
 	def on_attempt(status, attempt, duration_ms, reason, raw):
-		ScrapeLog.objects.create(
-			product=product,
-			status=status,
-			attempt_number=attempt,
-			duration_ms=duration_ms,
-			failure_reason=reason,
-			raw_price_text=raw,
-		)
+		attempt_events.append({
+			"status": status,
+			"attempt_number": attempt,
+			"duration_ms": duration_ms,
+			"failure_reason": reason,
+			"raw_price_text": raw,
+		})
 
 	try:
 		result = scrape_product(product.store_product_url, on_attempt=on_attempt)
 	except Exception as exc:
 		result = {"ok": False, "reason": "scraper_exception", "error": str(exc)}
 		on_attempt("failed", 0, None, result["reason"], str(exc))
+	ScrapeLog.objects.bulk_create([
+		ScrapeLog(product=product, **event)
+		for event in attempt_events
+	])
 	_record_scrape(product, result)
 	return result
 
