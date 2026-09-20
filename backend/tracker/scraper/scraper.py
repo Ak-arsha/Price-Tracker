@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 from . import selectors as sel
 
 load_dotenv()
-os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "0")
+if os.environ.get("RENDER"):
+    os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "0")
 
 def _env_number(name, default, converter=int):
     value = os.environ.get(name, "").strip()
