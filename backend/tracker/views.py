@@ -135,10 +135,9 @@ def track_product(request):
 			defaults={"name": body["name"]},
 		)
 		TrackedProduct.objects.update_or_create(product=product, defaults={"is_active": True})
-	result = _scrape_and_record(product)
 	payload = _product_payload(product)
-	payload["scrape"] = result
-	return JsonResponse(payload, status=201)
+	payload["scrape"] = {"ok": False, "reason": "initial_scrape_deferred"}
+	return JsonResponse(payload, status=202)
 
 
 def tracked_products(request):
