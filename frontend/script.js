@@ -1,4 +1,6 @@
-const API_BASE = "http://localhost:8000";
+const API_BASE = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+  ? "http://localhost:8000"
+  : "https://price-tracker-5jbv.onrender.com";
 
 const state = { selected: null };
 const $ = (selector) => document.querySelector(selector);

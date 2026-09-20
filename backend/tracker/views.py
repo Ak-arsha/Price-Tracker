@@ -78,30 +78,42 @@ def product_search(request):
 		return JsonResponse({"results": []})
 
 	results = []
-	with sync_playwright() as playwright:
-		browser = playwright.chromium.launch(headless=True)
-		try:
-			page = browser.new_page()
-			page.goto(sel.LISTING_URL, wait_until="domcontentloaded", timeout=15000)
-			page.wait_for_selector(sel.TILE, timeout=8000)
-			for tile in page.locator(sel.TILE).all():
-				name = (tile.locator(sel.TILE_NAME).first.text_content() or "").strip()
-				if query not in name.lower():
-					continue
-				href = tile.locator("a").first.get_attribute("href")
-				product_id = tile.get_attribute("data-product-id") or _store_product_id(href)
-				if not product_id:
-					button = tile.locator(sel.TILE_CTA).first
-					product_id = button.get_attribute("data-product-id")
-				if product_id:
-					url = sel.detail_url(product_id)
-					results.append({
-						"name": name,
-						"store_product_id": product_id,
-						"store_product_url": url,
-					})
-		finally:
-			browser.close()
+	try:
+		with sync_playwright() as playwright:
+			browser = playwright.chromium.launch(headless=True)
+			try:
+				page = browser.new_page()
+				page.goto(sel.LISTING_URL, wait_until="networkidle", timeout=30000)
+				page.wait_for_selector(sel.TILE, state="visible", timeout=20000)
+				tile_count = page.locator(sel.TILE).count()
+				for index in range(tile_count):
+					tile = page.locator(sel.TILE).nth(index)
+					name = (tile.locator(sel.TILE_NAME).first.text_content() or "").strip()
+					if query not in name.lower():
+						continue
+					link_count = tile.locator("a").count()
+					href = tile.locator("a").first.get_attribute("href") if link_count else None
+					product_id = tile.get_attribute("data-product-id") or _store_product_id(href)
+					if not product_id:
+						button = tile.locator(sel.TILE_CTA).first
+						product_id = button.get_attribute("data-product-id")
+					if not product_id:
+						tile.locator(sel.TILE_CTA).click()
+						page.wait_for_url("**/product/**", timeout=15000)
+						product_id = _store_product_id(page.url)
+						page.go_back(wait_until="networkidle", timeout=30000)
+						page.wait_for_selector(sel.TILE, state="visible", timeout=20000)
+					if product_id:
+						url = sel.detail_url(product_id)
+						results.append({
+							"name": name,
+							"store_product_id": product_id,
+							"store_product_url": url,
+						})
+			finally:
+				browser.close()
+	except Exception as exc:
+		return JsonResponse({"error": "store_search_failed", "detail": str(exc)}, status=502)
 	return JsonResponse({"results": results})
 
 

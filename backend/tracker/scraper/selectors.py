@@ -19,9 +19,9 @@ PRICE_BLOCK = "div.price-block"
 PRICE_STATUS = "p.price-status"
 REVEAL_BUTTON = f"{PRICE_BLOCK} button.btn-primary"
 
-PRICE_REVEALED_VALUE = "div.price-block .price-value"  
+PRICE_REVEALED_VALUE = "div.price-block .price-value"
 
-STOCK_STATUS = None 
+STOCK_STATUS = "div.price-block .stock-badge"
 
 
 def parse_price(raw_text):
