@@ -1,5 +1,7 @@
-#!/usr/bin/env bash
-set -e
-python manage.py collectstatic --noinput
-python manage.py migrate --noinput
-python -m playwright install chromium
+set -o errexit
+
+pip install -r requirements.txt
+python -m playwright install --with-deps chromium
+
+python manage.py collectstatic --no-input
+python manage.py migrate
