@@ -3,6 +3,7 @@ import re
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import F, Max
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from playwright.sync_api import sync_playwright
@@ -175,8 +176,19 @@ def scheduled_scrape(request):
 	expected = getattr(settings, "SCRAPE_TRIGGER_SECRET", "")
 	if not expected or request.headers.get("X-Scrape-Secret") != expected:
 		return JsonResponse({"error": "unauthorized"}, status=401)
-	results = []
-	for tracked in TrackedProduct.objects.select_related("product").filter(is_active=True):
-		result = _scrape_and_record(tracked.product)
-		results.append({"product_id": str(tracked.product_id), "name": tracked.product.name, "result": result})
-	return JsonResponse({"results": results})
+	tracked = (
+		TrackedProduct.objects.select_related("product")
+		.filter(is_active=True)
+		.annotate(latest_scrape_at=Max("product__scrape_logs__created_at"))
+		.order_by(F("latest_scrape_at").asc(nulls_first=True), "created_at")
+		.first()
+	)
+	if tracked is None:
+		return JsonResponse({"message": "No active tracked products."})
+
+	result = _scrape_and_record(tracked.product)
+	return JsonResponse({
+		"product_id": str(tracked.product_id),
+		"name": tracked.product.name,
+		"result": result,
+	})

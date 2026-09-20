@@ -3,15 +3,17 @@ import time
 import random
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 
 from . import selectors as sel
 
+load_dotenv()
 os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "0")
 
 # Keep the synchronous API request bounded on Render's free instance.
-MAX_CHALLENGE_RETRIES = 2
-MAX_RATE_LIMIT_RETRIES = 1
-MAX_OUTER_RETRIES = 2
+MAX_OUTER_RETRIES = int(os.environ.get("SCRAPE_MAX_OUTER_RETRIES", 2))
+MAX_CHALLENGE_RETRIES = int(os.environ.get("SCRAPE_MAX_CHALLENGE_RETRIES", 2))
+MAX_RATE_LIMIT_RETRIES = int(os.environ.get("SCRAPE_MAX_RATE_LIMIT_RETRIES", 1))
 NAV_TIMEOUT_MS = 15000
 SELECTOR_TIMEOUT_MS = 8000
 
