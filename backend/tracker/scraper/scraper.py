@@ -77,15 +77,19 @@ def _read_price_status(page):
         return None
 
 def _dismiss_cookie_banner(page):
-    for text in ["Accept", "Accept all", "I agree", "Got it", "OK"]:
-        try:
-            btn = page.get_by_role("button", name=text, exact=False)
-            btn.first.wait_for(state="visible", timeout=2500)
-            btn.first.click()
-            time.sleep(0.4)
-            return
-        except Exception:
-            continue  
+    texts = ["Accept", "Accept all", "I agree", "Got it", "OK"]
+    deadline = time.time() + 1.5
+    while time.time() < deadline:
+        for text in texts:
+            button = page.get_by_role("button", name=text, exact=False)
+            if button.count() > 0:
+                try:
+                    button.first.click(timeout=1000)
+                    time.sleep(0.4)
+                except Exception:
+                    pass
+                return
+        time.sleep(0.2)
 
 def scrape_product(product_url, headed=False, on_attempt=None):
     attempts_used = 0
