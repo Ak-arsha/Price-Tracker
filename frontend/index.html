@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Price Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div>
+      <p class="eyebrow">INE STORE MONITOR</p>
+      <h1>Product Price Tracker</h1>
+      <p class="subtitle">Track live prices, stock changes, and every scrape outcome.</p>
+    </div>
+    <button id="refresh-button" class="button secondary" type="button">Refresh</button>
+  </header>
+
+  <main class="layout">
+    <section class="panel search-panel">
+      <div class="section-heading">
+        <div><p class="eyebrow">01 / FIND</p><h2>Choose a product</h2></div>
+      </div>
+      <form id="search-form" class="search-form">
+        <label class="sr-only" for="search-input">Product name</label>
+        <input id="search-input" type="search" placeholder="Search by product name" autocomplete="off" required>
+        <button class="button primary" type="submit">Search</button>
+      </form>
+      <p id="search-message" class="message" role="status"></p>
+      <div id="search-results" class="result-list"></div>
+    </section>
+
+    <section class="panel tracked-panel">
+      <div class="section-heading">
+        <div><p class="eyebrow">02 / WATCH</p><h2>Tracked products</h2></div>
+        <span id="tracked-count" class="count">0</span>
+      </div>
+      <div id="tracked-products" class="tracked-list"></div>
+    </section>
+
+    <section id="details-panel" class="panel details-panel" hidden>
+      <div class="detail-header">
+        <div><p class="eyebrow">03 / INSPECT</p><h2 id="selected-name">Product history</h2><p id="selected-url" class="muted"></p></div>
+        <span id="selected-stock" class="stock-badge">Unknown</span>
+      </div>
+      <div class="stats"><div><span>Latest price</span><strong id="selected-price">-</strong></div><div><span>History points</span><strong id="history-count">0</strong></div><div><span>Logged attempts</span><strong id="log-count">0</strong></div></div>
+      <div class="table-section"><h3>Price and stock history</h3><div class="table-wrap"><table><thead><tr><th>Time</th><th>Price</th><th>Stock</th></tr></thead><tbody id="history-body"></tbody></table></div></div>
+      <div class="table-section"><h3>Scrape log</h3><div class="table-wrap"><table><thead><tr><th>Time</th><th>Status</th><th>Attempt</th><th>Failure reason</th><th>Duration</th></tr></thead><tbody id="logs-body"></tbody></table></div></div>
+    </section>
+  </main>
+  <footer>Scrape failures remain visible. No invalid price is added to history.</footer>
+  <script src="script.js"></script>
+</body>
+</html>
