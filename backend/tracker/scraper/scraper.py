@@ -10,12 +10,15 @@ from . import selectors as sel
 load_dotenv()
 os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "0")
 
-# Keep the synchronous API request bounded on Render's free instance.
+# Production can fail fast after one bounded attempt instead of risking a
+# request timeout; local defaults retain the fuller headed-demo retry behavior.
 MAX_OUTER_RETRIES = int(os.environ.get("SCRAPE_MAX_OUTER_RETRIES", 2))
 MAX_CHALLENGE_RETRIES = int(os.environ.get("SCRAPE_MAX_CHALLENGE_RETRIES", 2))
 MAX_RATE_LIMIT_RETRIES = int(os.environ.get("SCRAPE_MAX_RATE_LIMIT_RETRIES", 1))
-NAV_TIMEOUT_MS = 15000
-SELECTOR_TIMEOUT_MS = 8000
+HOVER_POLL_SECONDS = float(os.environ.get("SCRAPE_HOVER_POLL_SECONDS", 5))
+REVEAL_POLL_SECONDS = float(os.environ.get("SCRAPE_REVEAL_POLL_SECONDS", 8))
+NAV_TIMEOUT_MS = int(os.environ.get("SCRAPE_NAV_TIMEOUT_MS", 15000))
+SELECTOR_TIMEOUT_MS = int(os.environ.get("SCRAPE_SELECTOR_TIMEOUT_MS", 8000))
 
 
 def _human_like_reveal(page):
@@ -42,7 +45,7 @@ def _human_like_reveal(page):
             start_y + (target_y - start_y) * i / steps,
         )
         time.sleep(0.05)
-    deadline = time.time() + 5
+    deadline = time.time() + HOVER_POLL_SECONDS
     enabled = False
     while time.time() < deadline:
         page.mouse.move(target_x + random.uniform(-2, 2), target_y + random.uniform(-2, 2))
@@ -132,7 +135,7 @@ def scrape_product(product_url, headed=False, on_attempt=None):
 
             status_text = None
             block_class = ""
-            poll_deadline = time.time() + 8
+            poll_deadline = time.time() + REVEAL_POLL_SECONDS
             while time.time() < poll_deadline:
                 status_text = _read_price_status(page)
                 block_class = page.locator(sel.PRICE_BLOCK).get_attribute("class") or ""
@@ -209,7 +212,7 @@ def scrape_product(product_url, headed=False, on_attempt=None):
         browser = p.chromium.launch(headless=not headed, slow_mo=150 if headed else 0)
         try:
             result = {"ok": False, "reason": last_reason, "attempts": attempts_used}
-            for outer_attempt in range(1, MAX_OUTER_RETRIES + 1):
+            for outer_attempt in range(MAX_OUTER_RETRIES + 1):
                 context = None
                 try:
                     context = browser.new_context(
