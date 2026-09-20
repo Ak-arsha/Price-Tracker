@@ -10,6 +10,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    env:
+      DJANGO_SECRET_KEY: 'ci-secret-key-testing'
+      DATABASE_URL: 'sqlite:///db.sqlite3'
+      FRONTEND_ORIGIN: 'http://localhost:5500'
+
     steps:
       - uses: actions/checkout@v4
 
