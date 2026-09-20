@@ -1,9 +1,12 @@
+import os
 import time
 import random
 from playwright.sync_api import sync_playwright
 from bs4 import BeautifulSoup
 
 from . import selectors as sel
+
+os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "0")
 
 MAX_CHALLENGE_RETRIES = 4   
 MAX_RATE_LIMIT_RETRIES = 2      
