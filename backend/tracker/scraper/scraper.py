@@ -10,15 +10,19 @@ from . import selectors as sel
 load_dotenv()
 os.environ.setdefault("PLAYWRIGHT_BROWSERS_PATH", "0")
 
+def _env_number(name, default, converter=int):
+    value = os.environ.get(name, "").strip()
+    return converter(value) if value else default
+
 # Production can fail fast after one bounded attempt instead of risking a
 # request timeout; local defaults retain the fuller headed-demo retry behavior.
-MAX_OUTER_RETRIES = int(os.environ.get("SCRAPE_MAX_OUTER_RETRIES", 2))
-MAX_CHALLENGE_RETRIES = int(os.environ.get("SCRAPE_MAX_CHALLENGE_RETRIES", 2))
-MAX_RATE_LIMIT_RETRIES = int(os.environ.get("SCRAPE_MAX_RATE_LIMIT_RETRIES", 1))
-HOVER_POLL_SECONDS = float(os.environ.get("SCRAPE_HOVER_POLL_SECONDS", 5))
-REVEAL_POLL_SECONDS = float(os.environ.get("SCRAPE_REVEAL_POLL_SECONDS", 8))
-NAV_TIMEOUT_MS = int(os.environ.get("SCRAPE_NAV_TIMEOUT_MS", 15000))
-SELECTOR_TIMEOUT_MS = int(os.environ.get("SCRAPE_SELECTOR_TIMEOUT_MS", 8000))
+MAX_OUTER_RETRIES = _env_number("SCRAPE_MAX_OUTER_RETRIES", 2)
+MAX_CHALLENGE_RETRIES = _env_number("SCRAPE_MAX_CHALLENGE_RETRIES", 2)
+MAX_RATE_LIMIT_RETRIES = _env_number("SCRAPE_MAX_RATE_LIMIT_RETRIES", 1)
+HOVER_POLL_SECONDS = _env_number("SCRAPE_HOVER_POLL_SECONDS", 5, float)
+REVEAL_POLL_SECONDS = _env_number("SCRAPE_REVEAL_POLL_SECONDS", 8, float)
+NAV_TIMEOUT_MS = _env_number("SCRAPE_NAV_TIMEOUT_MS", 15000)
+SELECTOR_TIMEOUT_MS = _env_number("SCRAPE_SELECTOR_TIMEOUT_MS", 8000)
 
 
 def _human_like_reveal(page):
